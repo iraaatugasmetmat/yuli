@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animasi Orbit Matahari</title>
+    <style>
+        canvas {
+            background: black;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="solarSystem"></canvas>
+    <script>
+        const canvas = document.getElementById('solarSystem');
+        const ctx = canvas.getContext('2d');
+
+        // Update ukuran canvas agar responsif
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const sun = { x: canvas.width / 2, y: canvas.height / 2, radius: 50, color: 'yellow' };
+        const planets = [
+            { radius: 10, distance: 100, angle: 0, color: 'blue', speed: 0.02, name: 'laura A' },
+            { radius: 15, distance: 130, angle: 0, color: 'red', speed: 0.015, name: 'laura B' },
+            { radius: 20, distance: 160, angle: 0, color: 'green', speed: 0.01, name: 'laura C' },
+            { radius: 12, distance: 190, angle: 0, color: 'orange', speed: 0.025, name: 'laura D' },
+            { radius: 18, distance: 220, angle: 0, color: 'purple', speed: 0.018, name: 'laura E' }
+        ];
+
+        const stars = [];
+        for (let i = 0; i < 100; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 2,
+                speedX: (Math.random() - 0.5) * 0.5, // Kecepatan horizontal
+                speedY: (Math.random() - 0.5) * 0.5  // Kecepatan vertikal
+            });
+        }
+
+        function drawStars() {
+            ctx.fillStyle = 'white';
+            stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        function updateStars() {
+            stars.forEach(star => {
+                star.x += star.speedX;
+                star.y += star.speedY;
+
+                // Jika bintang keluar dari canvas, reset posisinya
+                if (star.x < 0) star.x = canvas.width;
+                if (star.x > canvas.width) star.x = 0;
+                if (star.y < 0) star.y = canvas.height;
+                if (star.y > canvas.height) star.y = 0;
+            });
+        }
+
+        function drawSun() {
+            ctx.beginPath();
+            ctx.fillStyle = sun.color;
+            const breathingEffect = 10 * Math.sin(Date.now() / 500) + 50; // Efek kembang kempis
+            ctx.arc(sun.x, sun.y, breathingEffect, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Efek cahaya
+            ctx.beginPath();
+            ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+            ctx.arc(sun.x, sun.y, breathingEffect + 20, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        function drawPlanets() {
+            planets.forEach(planet => {
+                // Gambar jalur orbit
+                ctx.beginPath();
+                ctx.strokeStyle = 'white'; // Warna jalur orbit
+                ctx.lineWidth = 1; // Ketebalan garis
+                ctx.arc(sun.x, sun.y, planet.distance, 0, 2 * Math.PI);
+                ctx.stroke();
+
+                // Hitung posisi planet menggunakan hukum euler
+                planet.angle += planet.speed;
+                const planetX = sun.x + planet.distance * Math.cos(planet.angle);
+                const planetY = sun.y + planet.distance * Math.sin(planet.angle);
+
+                // Gambar planet
+                ctx.beginPath();
+                ctx.fillStyle = planet.color;
+                ctx.arc(planetX, planetY, planet.radius, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Tampilkan nama planet (dengan pengecekan agar tidak keluar dari canvas)
+                ctx.fillStyle = 'white';
+                let planetLabelX = planetX + 10;
+                let planetLabelY = planetY;
+
+                // Pastikan nama planet tidak keluar dari canvas
+                if (planetLabelX + 100 > canvas.width) planetLabelX = planetX - 100;
+
+                ctx.fillText(`${planet.name}: (${planetX.toFixed(1)}, ${planetY.toFixed(1)})`, planetLabelX, planetLabelY);
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updateStars(); // Perbarui posisi bintang
+            drawStars(); // Gambar bintang di latar belakang
+            drawSun();
+            drawPlanets();
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>
